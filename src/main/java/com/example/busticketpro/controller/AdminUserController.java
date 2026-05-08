@@ -90,7 +90,7 @@ public class AdminUserController {
             userRepository.deleteById(id);
             redirectAttrs.addFlashAttribute("success", "Xóa tài khoản thành công!");
         } catch (Exception e) {
-            // ✅ Bắt lỗi ràng buộc FK
+            // Bắt lỗi ràng buộc FK
             redirectAttrs.addFlashAttribute("error",
                     "Không thể xóa tài khoản này vì đang có dữ liệu liên quan (vé đặt, lịch sử...)!");
         }

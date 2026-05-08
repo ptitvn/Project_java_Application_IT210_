@@ -33,4 +33,7 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
 
     @Query("SELECT s FROM Seat s WHERE s.trip.departureTime < :now AND s.status = :status")
     List<Seat> findByTripDepartureBeforeAndStatus(@Param("now") LocalDateTime now, @Param("status") SeatStatus status);
+
+    @Query("SELECT s FROM Seat s WHERE s.status = 'PENDING' AND s.lockedAt < :expiredTime")
+    List<Seat> findExpiredPendingSeats(@Param("expiredTime") LocalDateTime expiredTime);
 }

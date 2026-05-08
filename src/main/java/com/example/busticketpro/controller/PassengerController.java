@@ -104,9 +104,15 @@ public class PassengerController {
                                Model model, Authentication auth) {
         model.addAttribute("username", auth.getName());
         if (ticketCode == null || phone == null) return "ticket_lookup";
-        return ticketRepository.findByTicketCodeAndPhone(ticketCode, phone)
-                .map(ticket -> { model.addAttribute("ticket", ticket); return "ticket_lookup"; })
-                .orElseGet(() -> { model.addAttribute("error", "Không tìm thấy vé."); return "ticket_lookup"; });
+        return ticketRepository.findByTicketCodeAndPhoneWithDetails(ticketCode, phone)
+                .map(ticket -> {
+                    model.addAttribute("ticket", ticket);
+                    return "ticket_lookup";
+                })
+                .orElseGet(() -> {
+                    model.addAttribute("error", "Không tìm thấy vé.");
+                    return "ticket_lookup";
+                });
     }
 
     // CORE-09: Xem danh sách vé
@@ -127,7 +133,7 @@ public class PassengerController {
         User user = userRepository.findByUsername(auth.getName()).orElseThrow();
         Ticket ticket = ticketRepository.findByIdWithTrip(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy vé"));
-        
+
 
         if (!ticket.getUser().getId().equals(user.getId())) {
             redirectAttrs.addFlashAttribute("error", "Bạn không có quyền hủy vé này!");

@@ -30,7 +30,7 @@ public class TripController {
     @Autowired private RouteRepository routeRepository;
     @Autowired private SeatService seatService;
 
-    // ── Danh sách chuyến cho admin
+    // Danh sách chuyến cho admin
     @GetMapping
     public String listTrips(Model model, Authentication authentication) {
         List<Trip> trips = tripService.getAllTripsForAdmin();
@@ -48,7 +48,7 @@ public class TripController {
         return "trips";
     }
 
-    // ── Form thêm chuyến mới
+    // Form thêm chuyến mới
     @GetMapping("/new")
     public String newTripForm(Model model, Authentication authentication) {
         model.addAttribute("tripDTO", new TripDTO());
@@ -58,7 +58,7 @@ public class TripController {
         return "trip_form";
     }
 
-    // ── Tạo chuyến mới
+    //  Tạo chuyến mới
     @PostMapping("/create")
     public String createTrip(@ModelAttribute @Valid TripDTO dto,
                              BindingResult bindingResult,
@@ -81,7 +81,7 @@ public class TripController {
         return "redirect:/admin/trips";
     }
 
-    // ── Xóa chuyến xe (Admin)
+    //  Xóa chuyến xe (Admin)
     @GetMapping("/delete/{id}")
     public String deleteTrip(@PathVariable Long id, RedirectAttributes redirectAttrs) {
         try {
@@ -93,7 +93,7 @@ public class TripController {
         return "redirect:/admin/trips";
     }
 
-    // ── Xem sơ đồ ghế
+    //  Xem sơ đồ ghế
     @GetMapping("/{tripId}/seats")
     public String viewSeats(@PathVariable Long tripId, Model model, Authentication authentication) {
         Trip trip = tripService.getById(tripId);

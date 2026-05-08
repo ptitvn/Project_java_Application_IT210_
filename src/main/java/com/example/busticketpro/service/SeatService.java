@@ -2,6 +2,7 @@ package com.example.busticketpro.service;
 
 import com.example.busticketpro.model.*;
 import com.example.busticketpro.repository.SeatRepository;
+import com.example.busticketpro.repository.TicketRepository;
 import com.example.busticketpro.repository.TripRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -19,6 +20,8 @@ public class SeatService {
 
     @Autowired
     private TripRepository tripRepository;
+    @Autowired
+    private TicketRepository ticketRepository;
 
     // Lấy danh sách ghế của chuyến xe, tự tạo nếu chưa có
     @Transactional
@@ -59,7 +62,21 @@ public class SeatService {
     @Transactional
     public void releaseExpiredSeats() {
         LocalDateTime expiredTime = LocalDateTime.now().minusMinutes(15);
-        seatRepository.releaseExpiredSeats(expiredTime);
+
+        // Tìm các vé PENDING quá hạn và hủy luôn
+        List<Seat> expiredSeats = seatRepository.findExpiredPendingSeats(expiredTime);
+        for (Seat seat : expiredSeats) {
+            seat.setStatus(SeatStatus.AVAILABLE);
+            seat.setLockedAt(null);
+            seatRepository.save(seat);
+
+            //  Cập nhật vé sang CANCELLED
+            ticketRepository.findBySeatIdAndStatus(seat.getId(), TicketStatus.PENDING)
+                    .ifPresent(ticket -> {
+                        ticket.setStatus(TicketStatus.CANCELLED);
+                        ticketRepository.save(ticket);
+                    });
+        }
         System.out.println(" Đã giải phóng ghế hết hạn giữ chỗ");
     }
 
