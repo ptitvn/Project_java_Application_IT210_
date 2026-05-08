@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Đăng nhập - Bus Ticket Pro</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <style>
+        input:not(:placeholder-shown):invalid {
+            border-color: #dc3545;
+        }
+        input:not(:placeholder-shown):invalid ~ .invalid-feedback {
+            display: block !important;
+            color: #dc3545;
+            font-size: 0.875em;
+        }
+    </style>
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <h3 class="text-center mb-4">Đăng nhập</h3>
+
+            <div th:if="${param.logout}" class="alert alert-info">
+                Bạn đã đăng xuất thành công!
+            </div>
+            <div th:if="${param.registered}" class="alert alert-success">
+                Đăng ký thành công! Vui lòng đăng nhập.
+            </div>
+
+            <!-- ✅ Thông báo lỗi từ server khi sai tài khoản/mật khẩu -->
+            <div th:if="${param.error}" class="alert alert-danger">
+                Tên đăng nhập hoặc mật khẩu không đúng. Vui lòng thử lại.
+            </div>
+
+            <form th:action="@{/login}" method="post" novalidate>
+                <div class="mb-3">
+                    <label class="form-label">Tên đăng nhập</label>
+                    <input type="text" class="form-control" name="username"
+                           placeholder=" " minlength="4" required>
+                    <div class="invalid-feedback" style="display:none">
+                        Vui lòng nhập tên đăng nhập (ít nhất 4 ký tự)
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Mật khẩu</label>
+                    <input type="password" class="form-control" name="password"
+                           placeholder=" " minlength="8" required>
+                    <div class="invalid-feedback" style="display:none">
+                        Vui lòng nhập mật khẩu (ít nhất 8 ký tự)
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
+                <p class="mt-3 text-center">
+                    <a th:href="@{/register}">Chưa có tài khoản? Đăng ký</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
