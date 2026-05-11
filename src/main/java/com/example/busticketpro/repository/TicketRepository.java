@@ -12,8 +12,7 @@ import java.util.List;
 import java.util.Optional;
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
-    Optional<Ticket> findBySeatIdAndStatus(Long seatId, TicketStatus status);
-    Optional<Ticket> findByTicketCodeAndPhone(String ticketCode, String phone);
+
     //Tìm danh sách tất cả các vé thuộc về một chuyến xe cụ thể.
     List<Ticket> findByTripId(Long tripId);
 
@@ -31,16 +30,6 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             "WHERE t.status = :status")
     List<Ticket> findByStatusWithDetails(@Param("status") TicketStatus status);
 
-    @Query("SELECT t FROM Ticket t " +
-            "JOIN FETCH t.trip tr " +
-            "JOIN FETCH tr.route r " +
-            "JOIN FETCH r.fromLocation " +
-            "JOIN FETCH r.toLocation " +
-            "JOIN FETCH tr.bus " +
-            "JOIN FETCH t.seat " +
-            "WHERE t.user.id = :userId " +
-            "ORDER BY t.bookedAt ASC")
-    List<Ticket> findByUserId(@Param("userId") Long userId);
 
     @Query("SELECT t FROM Ticket t " +
             "JOIN FETCH t.trip tr " +

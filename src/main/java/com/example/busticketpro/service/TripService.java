@@ -20,11 +20,6 @@ public class TripService {
     @Autowired private TicketRepository ticketRepository;
     @Autowired private SeatRepository seatRepository;
 
-    // ── Lấy tất cả chuyến (dành cho admin)
-    public List<Trip> getAllTripsForAdmin() {
-        return tripRepository.findAll();
-    }
-
     public List<Trip> getUpcomingTrips() {
         LocalDateTime now = LocalDateTime.now();
         return tripRepository.findAll()
@@ -94,25 +89,7 @@ public class TripService {
         tripRepository.delete(trip);
     }
 
-    // ── Giải phóng ghế cho các chuyến đã khởi hành (dành cho cronjob)
-    @Transactional
-    public void releaseSeatsForDepartedTrips() {
-        LocalDateTime now = LocalDateTime.now();
-        List<Trip> trips = tripRepository.findAll();
-        for (Trip trip : trips) {
-            if (trip.getDepartureTime().isBefore(now)) {
-                List<Seat> seats = seatRepository.findByTripId(trip.getId());
-                for (Seat seat : seats) {
-                    if (seat.getStatus() != SeatStatus.AVAILABLE) {
-                        seat.setStatus(SeatStatus.AVAILABLE);
-                        seat.setLockedAt(null);
-                        seatRepository.save(seat);
-                    }
-                }
-            }
-        }
-    }
-    
+
     public Page<Trip> getPageForAdmin(Pageable pageable) {
         return tripRepository.findAll(pageable);
     }
