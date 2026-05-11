@@ -17,7 +17,6 @@ import java.util.Optional;
 @Repository
 public interface SeatRepository extends JpaRepository<Seat, Long> {
 
-    // Đã có trong code cũ của bạn - giữ nguyên
     List<Seat> findByTripId(Long tripId);
 
     @Modifying
@@ -26,7 +25,7 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
             "AND s.lockedAt < :expiredTime")
     void releaseExpiredSeats(@Param("expiredTime") LocalDateTime expiredTime);
 
-    // MỚI: SELECT FOR UPDATE - lock row để tránh race condition (CORE-06)
+    // SELECT FOR UPDATE - lock row để tránh race condition
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT s FROM Seat s WHERE s.id = :id")
     Optional<Seat> findByIdWithLock(@Param("id") Long id);

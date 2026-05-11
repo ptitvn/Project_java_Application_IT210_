@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Max;
-
+//Chứa dữ liệu khi Admin thực hiện thêm mới hoặc chỉnh sửa một chiếc xe.
 public class BusDTO {
     @NotBlank(message = "Biển số xe không được để trống")
     private String licensePlate;

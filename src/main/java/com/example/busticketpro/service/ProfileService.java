@@ -16,7 +16,7 @@ public class ProfileService {
 
     @Autowired
     private UserRepository userRepo;
-
+// Lấy thông tin hồ sơ của người
     public UserProfile getProfile(Long userId) {
         return profileRepo.findByUserId(userId)
                 .orElseGet(() -> {
@@ -30,7 +30,7 @@ public class ProfileService {
                     return profileRepo.save(newProfile);
                 });
     }
-
+//Cập nhật thông tin
     public UserProfile updateProfile(Long userId, ProfileDTO dto) {
         UserProfile profile = getProfile(userId);
         profile.setFullName(dto.getFullName());

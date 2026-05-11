@@ -12,7 +12,7 @@ public class StaffService {
 
     @Autowired private TicketRepository ticketRepository;
     @Autowired private SeatRepository seatRepository;
-
+// Xác nhận hành khách đã trả tiền cho vé
     @Transactional(rollbackFor = Exception.class)
     public String confirmPayment(Long ticketId) {
         Ticket ticket = ticketRepository.findById(ticketId)
@@ -32,7 +32,7 @@ public class StaffService {
 
         return "Đã xác nhận thanh toán vé: " + ticket.getTicketCode();
     }
-
+//  Hủy vé đang chờ thanh toán theo yêu cầu hoặc do vi phạm quy định.
     @Transactional(rollbackFor = Exception.class)
     public String cancelTicket(Long ticketId) {
         Ticket ticket = ticketRepository.findById(ticketId)

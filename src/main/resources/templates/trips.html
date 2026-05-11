@@ -61,7 +61,7 @@
         <div class="col-md-4">
             <div class="btp-card btp-card-body">
                 <div class="text-muted small">Tổng số chuyến</div>
-                <div class="fs-3 fw-bold" th:text="${#lists.size(trips)}">0</div>
+                <div class="fs-3 fw-bold" th:text="${totalItems}">0</div>
             </div>
         </div>
 
@@ -96,7 +96,7 @@
 
             <tbody>
             <tr th:each="trip, i : ${trips}">
-                <td class="fw-semibold" th:text="${i.count}"></td>
+                <td class="fw-semibold" th:text="${currentPage * 5 + i.count}"></td>
 
                 <td>
                     <div class="fw-bold" th:text="${trip.bus.licensePlate}"></div>
@@ -160,9 +160,39 @@
             </tr>
             </tbody>
         </table>
+
+        <nav th:if="${totalPages != null and totalPages > 1}" class="py-3 border-top">
+            <ul class="pagination justify-content-center mb-0">
+
+                <li class="page-item"
+                    th:classappend="${currentPage == 0} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/admin/trips(page=${currentPage - 1})}">
+                        Trước
+                    </a>
+                </li>
+
+                <li class="page-item"
+                    th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                    th:classappend="${i == currentPage} ? 'active'">
+                    <a class="page-link"
+                       th:href="@{/admin/trips(page=${i})}"
+                       th:text="${i + 1}">
+                    </a>
+                </li>
+
+                <li class="page-item"
+                    th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/admin/trips(page=${currentPage + 1})}">
+                        Sau
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
     </div>
 
 </main>
-
 </body>
 </html>

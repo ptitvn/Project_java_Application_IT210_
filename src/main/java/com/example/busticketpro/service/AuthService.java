@@ -20,7 +20,7 @@ public class AuthService {
 
     @Autowired
     private ProfileRepository profileRepo;
-
+//  Xử lý nghiệp vụ đăng ký người dùng mới
     public User register(String username, String rawPassword, Role role) {
         if (userRepo.findByUsername(username).isPresent()) {
             throw new RuntimeException("Tên đăng nhập đã tồn tại");
@@ -31,7 +31,6 @@ public class AuthService {
         u.setRole(role);
         User saved = userRepo.save(u);
 
-        //  Tự động tạo Profile rỗng
         UserProfile profile = new UserProfile();
         profile.setUser(saved);
         profile.setFullName("");
@@ -40,14 +39,5 @@ public class AuthService {
         profileRepo.save(profile);
 
         return saved;
-    }
-
-    public User login(String username, String rawPassword) {
-        User u = userRepo.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
-        if (!passwordEncoder.matches(rawPassword, u.getPasswordHash())) {
-            throw new RuntimeException("Sai mật khẩu");
-        }
-        return u;
     }
 }

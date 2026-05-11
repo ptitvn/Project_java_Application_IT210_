@@ -10,7 +10,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Max;
-
+//  lưu trữ vĩnh viễn thông tin xe khách
 @Entity
 @Table(name = "buses")
 public class Bus {
@@ -24,7 +24,7 @@ public class Bus {
     private String licensePlate;
 
     @NotBlank(message = "Loại xe không được để trống")
-    private String type; // Ví dụ: 29 chỗ, 45 chỗ
+    private String type;
 
     @NotNull(message = "Số ghế không được để trống")
     @Min(value = 10, message = "Xe phải có ít nhất 10 ghế")

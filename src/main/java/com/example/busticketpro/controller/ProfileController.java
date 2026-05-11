@@ -22,7 +22,7 @@ public class ProfileController {
 
     @Autowired
     private UserRepository userRepository;
-
+//  Lấy thông tin hồ sơ (profile) của người dùng hiện tại và hiển thị lên trang cá nhân.
     @GetMapping
     public String getProfile(Authentication authentication, Model model) {
         User user = userRepository.findByUsername(authentication.getName())
@@ -34,6 +34,7 @@ public class ProfileController {
         return "profile";
     }
 
+//    Cập nhật thông tin hồ sơ mới từ form và điều hướng người dùng về trang chủ tương ứng với vai trò (Role).
     @PostMapping("/update")
     public String updateProfile(Authentication authentication,
                                 @ModelAttribute @Valid ProfileDTO dto,
@@ -59,6 +60,7 @@ public class ProfileController {
         }
     }
 
+//Hàm hỗ trợ chuyển đổi dữ liệu từ đối tượng Entity (UserProfile) sang DTO (ProfileDTO) để dùng cho Form.
     private ProfileDTO toDTO(UserProfile p) {
         ProfileDTO dto = new ProfileDTO();
         dto.setFullName(p.getFullName());

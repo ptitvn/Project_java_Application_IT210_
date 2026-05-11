@@ -13,6 +13,7 @@ import org.springframework.validation.BindingResult;
 @Controller
 public class AuthController {
 
+//  Điều hướng người dùng về trang chủ tương ứng dựa trên vai trò (Admin, Nhân viên, hoặc Khách).
     @Autowired
     private AuthService authService;
     @GetMapping("/")
@@ -32,13 +33,14 @@ public class AuthController {
     public String loginPage() {
         return "login";
     }
-
+// Chuẩn bị dữ liệu mẫu (UserDTO) và hiển thị giao diện trang đăng ký tài khoản.
     @GetMapping("/register")
     public String registerPage(Model model) {
         model.addAttribute("userDTO", new UserDTO());
         return "register";
     }
 
+//  Xử lý logic đăng ký tài khoản mới, kiểm tra lỗi nhập liệu, khớp mật khẩu và lưu vào database.
     @PostMapping("/register")
     public String register(@ModelAttribute @Valid UserDTO dto,
                            BindingResult bindingResult,

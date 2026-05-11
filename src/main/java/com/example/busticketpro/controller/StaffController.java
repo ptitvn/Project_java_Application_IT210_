@@ -22,16 +22,15 @@ public class StaffController {
 
     @Autowired
     private StaffService staffService;
-
+//Hiển thị trang chủ dành cho nhân viên
     @GetMapping("/tickets")
     public String staffHome(Model model, Authentication auth) {
         model.addAttribute("username", auth.getName());
         return "staff_tickets";
     }
 
-    /**
-     * CORE-08: Danh sách vé chờ thanh toán (PENDING)
-     */
+
+//       Danh sách vé chờ thanh toán (PENDING)
     @GetMapping("/pending-tickets")
     public String pendingTickets(Model model, Authentication auth) {
         model.addAttribute("username", auth.getName());

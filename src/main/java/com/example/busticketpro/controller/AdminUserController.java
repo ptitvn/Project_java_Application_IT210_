@@ -6,6 +6,9 @@ import com.example.busticketpro.model.UserProfile;
 import com.example.busticketpro.repository.ProfileRepository;
 import com.example.busticketpro.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -21,18 +24,32 @@ public class AdminUserController {
     @Autowired private ProfileRepository profileRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
+// Hiển thị danh sách tất cả người dùng và xử lý phân trang.
     @GetMapping
-    public String listUsers(Model model, Authentication auth) {
-        model.addAttribute("users", userRepository.findAll());
+    public String listUsers(@RequestParam(defaultValue = "0") int page,
+                            Model model,
+                            Authentication auth) {
+
+        int pageSize = 5;
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Page<User> userPage = userRepository.findAll(pageable);
+
+        model.addAttribute("users", userPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", userPage.getTotalPages());
+        model.addAttribute("totalItems", userPage.getTotalElements());
         model.addAttribute("username", auth.getName());
+
         return "admin_users";
     }
 
+//Xử lý tạo tài khoản mới kèm theo kiểm tra lỗi nhập liệu và tạo hồ sơ (profile) mặc định.
     @PostMapping("/create")
     public String createUser(@RequestParam(required = false) String username,
                              @RequestParam(required = false) String password,
                              @RequestParam Role role,
-                             Model model, Authentication auth) {
+                             Model model,
+                             Authentication auth) {
 
         boolean hasError = false;
 
@@ -42,7 +59,7 @@ public class AdminUserController {
         } else if (username.trim().length() < 4) {
             model.addAttribute("errorUsername", "Tên đăng nhập phải từ 4 ký tự trở lên");
             hasError = true;
-        } else if (userRepository.findByUsername(username).isPresent()) {
+        } else if (userRepository.findByUsername(username.trim()).isPresent()) {
             model.addAttribute("errorUsername", "Tên đăng nhập đã tồn tại");
             hasError = true;
         }
@@ -56,8 +73,16 @@ public class AdminUserController {
         }
 
         if (hasError) {
-            model.addAttribute("users", userRepository.findAll());
+            int pageSize = 5;
+            Pageable pageable = PageRequest.of(0, pageSize);
+            Page<User> userPage = userRepository.findAll(pageable);
+
+            model.addAttribute("users", userPage.getContent());
+            model.addAttribute("currentPage", 0);
+            model.addAttribute("totalPages", userPage.getTotalPages());
+            model.addAttribute("totalItems", userPage.getTotalElements());
             model.addAttribute("username", auth.getName());
+
             return "admin_users";
         }
 
@@ -65,6 +90,7 @@ public class AdminUserController {
         user.setUsername(username.trim());
         user.setPasswordHash(passwordEncoder.encode(password));
         user.setRole(role);
+
         User saved = userRepository.save(user);
 
         UserProfile profile = new UserProfile();
@@ -72,28 +98,36 @@ public class AdminUserController {
         profile.setFullName("");
         profile.setPhone("0000000000");
         profile.setEmail("default@email.com");
+
         profileRepository.save(profile);
 
         return "redirect:/admin/users";
     }
 
+//  Xóa tài khoản người dùng theo ID
     @GetMapping("/delete/{id}")
-    public String deleteUser(@PathVariable Long id, Authentication auth, RedirectAttributes redirectAttrs) {
-        // Không cho xóa chính mình
+    public String deleteUser(@PathVariable Long id,
+                             Authentication auth,
+                             RedirectAttributes redirectAttrs) {
+
         User current = userRepository.findByUsername(auth.getName()).orElseThrow();
+
         if (current.getId().equals(id)) {
             redirectAttrs.addFlashAttribute("error", "Không thể xóa tài khoản đang đăng nhập!");
             return "redirect:/admin/users";
         }
+
         try {
             profileRepository.findByUserId(id).ifPresent(profileRepository::delete);
             userRepository.deleteById(id);
             redirectAttrs.addFlashAttribute("success", "Xóa tài khoản thành công!");
         } catch (Exception e) {
-            // Bắt lỗi ràng buộc FK
-            redirectAttrs.addFlashAttribute("error",
-                    "Không thể xóa tài khoản này vì đang có dữ liệu liên quan (vé đặt, lịch sử...)!");
+            redirectAttrs.addFlashAttribute(
+                    "error",
+                    "Không thể xóa tài khoản này vì đang có dữ liệu liên quan (vé đặt, lịch sử...)!"
+            );
         }
+
         return "redirect:/admin/users";
     }
 }

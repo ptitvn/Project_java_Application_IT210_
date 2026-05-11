@@ -9,7 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 @Service
 public class TripService {
 
@@ -82,14 +83,14 @@ public class TripService {
             }
         }
 
-        // Xóa tickets trước (FK từ tickets → seats, trips)
+
         ticketRepository.deleteAll(tickets);
 
-        // Xóa seats
+        
         List<Seat> seats = seatRepository.findByTripId(id);
         seatRepository.deleteAll(seats);
 
-        // Cuối cùng xóa trip
+
         tripRepository.delete(trip);
     }
 
@@ -110,5 +111,9 @@ public class TripService {
                 }
             }
         }
+    }
+    
+    public Page<Trip> getPageForAdmin(Pageable pageable) {
+        return tripRepository.findAll(pageable);
     }
 }

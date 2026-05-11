@@ -12,9 +12,12 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class PassengerController {
@@ -25,7 +28,9 @@ public class PassengerController {
     @Autowired private BookingService bookingService;
     @Autowired private TicketRepository ticketRepository;
     @Autowired private UserRepository userRepository;
+    @Autowired private EmailService emailService;
 
+//    Hiển thị danh sách các chuyến xe sắp khởi hành cho hành khách xem.
     @GetMapping("/passenger/trips")
     public String listTripsForPassenger(Model model, Authentication auth) {
         List<Trip> trips = tripService.getUpcomingTrips();
@@ -34,6 +39,7 @@ public class PassengerController {
         return "passenger_trips";
     }
 
+//    Hiển thị sơ đồ ghế ngồi của một chuyến xe cụ thể để khách chọn chỗ.
     @GetMapping("/passenger/trips/{tripId}/seats")
     public String seatMap(@PathVariable Long tripId, Model model, Authentication auth) {
         Trip trip = tripService.getById(tripId);
@@ -44,60 +50,76 @@ public class PassengerController {
         return "seat_map";
     }
 
-    @GetMapping("/booking-form")
-    public String bookingForm(@RequestParam Long tripId,
-                              @RequestParam Long seatId,
-                              Model model, Authentication auth) {
-        Trip trip = tripService.getById(tripId);
-        Seat seat = seatRepository.findById(seatId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy ghế"));
-        if (seat.getStatus() != SeatStatus.AVAILABLE)
-            return "redirect:/passenger/trips/" + tripId + "/seats?error=seat_taken";
-        BookingRequestDTO dto = new BookingRequestDTO();
-        dto.setTripId(tripId);
-        dto.setSeatId(seatId);
-        model.addAttribute("bookingRequest", dto);
+//    Hiển thị form điền thông tin cá nhân sau khi khách đã chọn được ghế.
+@GetMapping("/booking-form")
+public String bookingForm(@RequestParam Long tripId,
+                          @RequestParam List<Long> seatIds,
+                          Model model,
+                          Authentication auth) {
+    Trip trip = tripService.getById(tripId);
+
+
+    List<Seat> seats = seatIds.stream()
+            .map(id -> seatRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy ghế")))
+            .filter(s -> s.getStatus() == SeatStatus.AVAILABLE)
+            .collect(Collectors.toList());
+
+    if (seats.isEmpty()) {
+        return "redirect:/passenger/trips/" + tripId + "/seats?error=seat_taken";
+    }
+
+    Seat seat = seats.get(0);
+
+    model.addAttribute("trip", trip);
+    model.addAttribute("seat", seat);
+    model.addAttribute("seats", seats);
+    model.addAttribute("bookingRequest", new BookingRequestDTO());
+    model.addAttribute("username", auth.getName());
+
+    return "booking_form";
+}
+
+//    Xử lý logic đặt vé, lưu vào database và gửi thông báo thành công.
+@PostMapping("/book-ticket")
+public String bookTicket(@Valid @ModelAttribute("bookingRequest") BookingRequestDTO dto,
+                         BindingResult bindingResult,
+                         Model model, Authentication auth,
+                         RedirectAttributes redirectAttrs) {
+    if (bindingResult.hasErrors()) {
+        Trip trip = tripService.getById(dto.getTripId());
+        List<Seat> seats = dto.getSeatIds().stream()
+                .map(id -> seatRepository.findById(id).orElse(null))
+                .collect(Collectors.toList());
         model.addAttribute("trip", trip);
-        model.addAttribute("seat", seat);
+        model.addAttribute("seats", seats);
+//        model.addAttribute("bookingRequest", new BookingRequestDTO());
         model.addAttribute("username", auth.getName());
         return "booking_form";
     }
-
-    @PostMapping("/book-ticket")
-    public String bookTicket(@Valid @ModelAttribute("bookingRequest") BookingRequestDTO dto,
-                             BindingResult bindingResult,
-                             Model model, Authentication auth,
-                             RedirectAttributes redirectAttrs) {
-        if (bindingResult.hasErrors()) {
-            Trip trip = tripService.getById(dto.getTripId());
-            Seat seat = seatRepository.findById(dto.getSeatId()).orElse(null);
-            model.addAttribute("trip", trip);
-            model.addAttribute("seat", seat);
-            model.addAttribute("username", auth.getName());
-            return "booking_form";
-        }
-        try {
-            Ticket ticket = bookingService.processBooking(dto, auth.getName());
-            redirectAttrs.addFlashAttribute("successMsg", "Đặt vé thành công! Mã vé: " + ticket.getTicketCode());
-            return "redirect:/booking-success";
-        } catch (RuntimeException e) {
-            Trip trip = tripService.getById(dto.getTripId());
-            Seat seat = seatRepository.findById(dto.getSeatId()).orElse(null);
-            model.addAttribute("errorMsg", e.getMessage());
-            model.addAttribute("trip", trip);
-            model.addAttribute("seat", seat);
-            model.addAttribute("bookingRequest", dto);
-            model.addAttribute("username", auth.getName());
-            return "booking_form";
-        }
+    try {
+        List<Ticket> tickets = bookingService.processBooking(dto, auth.getName());
+        String codes = tickets.stream()
+                .map(Ticket::getTicketCode)
+                .collect(Collectors.joining(", "));
+        redirectAttrs.addFlashAttribute("successMsg", "Đặt vé thành công! Mã vé: " + codes);
+        return "redirect:/booking-success";
+    } catch (RuntimeException e) {
+        // Thông báo rõ ghế nào bị lấy, redirect về seat_map để chọn lại
+        redirectAttrs.addFlashAttribute("errorMsg",
+                e.getMessage() + " — Vui lòng chọn lại ghế.");
+        return "redirect:/passenger/trips/" + dto.getTripId() + "/seats";
     }
+}
 
+//    Hiển thị trang thông báo khi hành khách đã đặt vé thành công.
     @GetMapping("/booking-success")
     public String bookingSuccess(Model model, Authentication auth) {
         model.addAttribute("username", auth.getName());
         return "booking_success";
     }
 
+//    Cho phép hành khách tìm kiếm lại thông tin vé bằng mã vé và số điện thoại.
     @GetMapping("/ticket-lookup")
     public String lookupTicket(@RequestParam(required = false) String ticketCode,
                                @RequestParam(required = false) String phone,
@@ -117,10 +139,16 @@ public class PassengerController {
 
     // CORE-09: Xem danh sách vé
     @GetMapping("/passenger/my-tickets")
-    public String myTickets(Model model, Authentication auth) {
+    public String myTickets(@RequestParam(defaultValue = "0") int page,
+                            Model model,
+                            Authentication auth) {
         User user = userRepository.findByUsername(auth.getName()).orElseThrow();
-        List<Ticket> tickets = ticketRepository.findByUserId(user.getId());
-        model.addAttribute("tickets", tickets);
+        Pageable pageable = PageRequest.of(page, 5);
+        Page<Ticket> ticketPage = ticketRepository.findByUserIdWithDetailsPage(user.getId(), pageable);
+        model.addAttribute("tickets", ticketPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", ticketPage.getTotalPages());
+        model.addAttribute("totalItems", ticketPage.getTotalElements());
         model.addAttribute("username", auth.getName());
         return "my_tickets";
     }
@@ -133,7 +161,6 @@ public class PassengerController {
         User user = userRepository.findByUsername(auth.getName()).orElseThrow();
         Ticket ticket = ticketRepository.findByIdWithTrip(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy vé"));
-
 
         if (!ticket.getUser().getId().equals(user.getId())) {
             redirectAttrs.addFlashAttribute("error", "Bạn không có quyền hủy vé này!");
@@ -161,6 +188,8 @@ public class PassengerController {
         seat.setStatus(SeatStatus.AVAILABLE);
         seat.setLockedAt(null);
         seatRepository.save(seat);
+
+        emailService.sendCancelNotification(ticket);
 
         redirectAttrs.addFlashAttribute("success", "Hủy vé thành công! Mã vé: " + ticket.getTicketCode());
         return "redirect:/passenger/my-tickets";

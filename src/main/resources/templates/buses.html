@@ -48,16 +48,14 @@
             </a>
 
             <form th:action="@{/logout}" method="post" class="d-inline">
-
                 <input type="hidden"
                        th:name="${_csrf.parameterName}"
-                       th:value="${_csrf.token}"/>
+                       th:value="${_csrf.token}">
 
                 <button type="submit"
                         class="btn btn-outline-light btn-sm">
                     Đăng xuất
                 </button>
-
             </form>
 
         </div>
@@ -102,7 +100,7 @@
                 </div>
 
                 <div class="fs-3 fw-bold"
-                     th:text="${#lists.size(buses)}">
+                     th:text="${totalItems}">
                     0
                 </div>
 
@@ -145,6 +143,7 @@
 
             <thead>
             <tr>
+                <th>#</th>
                 <th>Biển số</th>
                 <th>Loại xe</th>
                 <th>Số ghế</th>
@@ -156,7 +155,12 @@
 
             <tbody>
 
-            <tr th:each="bus : ${buses}">
+            <tr th:each="bus, i : ${buses}">
+
+                <td class="fw-semibold"
+                    th:text="${currentPage * 5 + i.count}">
+                    1
+                </td>
 
                 <td>
                     <div class="fw-bold"
@@ -209,7 +213,7 @@
 
             <tr th:if="${#lists.isEmpty(buses)}">
 
-                <td colspan="6">
+                <td colspan="7">
 
                     <div class="empty-state">
 
@@ -239,6 +243,46 @@
             </tbody>
 
         </table>
+
+        <nav th:if="${totalPages != null and totalPages > 1}"
+             class="py-3 border-top">
+
+            <ul class="pagination justify-content-center mb-0">
+
+                <li class="page-item"
+                    th:classappend="${currentPage == 0} ? 'disabled'">
+
+                    <a class="page-link"
+                       th:href="@{/admin/buses(page=${currentPage - 1})}">
+                        Trước
+                    </a>
+
+                </li>
+
+                <li class="page-item"
+                    th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                    th:classappend="${i == currentPage} ? 'active'">
+
+                    <a class="page-link"
+                       th:href="@{/admin/buses(page=${i})}"
+                       th:text="${i + 1}">
+                    </a>
+
+                </li>
+
+                <li class="page-item"
+                    th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
+
+                    <a class="page-link"
+                       th:href="@{/admin/buses(page=${currentPage + 1})}">
+                        Sau
+                    </a>
+
+                </li>
+
+            </ul>
+
+        </nav>
 
     </div>
 

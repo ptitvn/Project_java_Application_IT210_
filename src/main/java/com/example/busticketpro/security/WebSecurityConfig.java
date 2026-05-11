@@ -26,8 +26,9 @@ public class WebSecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/staff/**").hasRole("STAFF")
                         .requestMatchers("/passenger/**").hasRole("PASSENGER")
-                        .requestMatchers("/booking-form", "/book-ticket",
-                                "/booking-success", "/ticket-lookup").hasRole("PASSENGER") 
+                        .requestMatchers("/booking-form", "/book-ticket", "/booking-success",
+                                "/ticket-lookup", "/booking-form-multi", "/book-ticket-multi")
+                        .hasRole("PASSENGER")
                         .requestMatchers("/profile/**", "/").hasAnyRole("PASSENGER", "STAFF", "ADMIN")
                         .anyRequest().authenticated()
                 )

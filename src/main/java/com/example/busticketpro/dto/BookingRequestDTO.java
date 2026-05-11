@@ -1,16 +1,17 @@
 package com.example.busticketpro.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import java.util.List;
 
 public class BookingRequestDTO {
 
     @NotNull
     private Long tripId;
 
-    @NotNull
-    private Long seatId;
+    private List<Long> seatIds;
 
     @NotBlank(message = "Họ tên không được để trống")
     private String passengerName;
@@ -19,13 +20,15 @@ public class BookingRequestDTO {
     @Pattern(regexp = "^(0|\\+84)[0-9]{8,9}$", message = "Số điện thoại không hợp lệ")
     private String phone;
 
+    @NotBlank(message = "Email không được để trống")
+    @Email(message = "Email không hợp lệ")
     private String email;
 
     public Long getTripId() { return tripId; }
     public void setTripId(Long tripId) { this.tripId = tripId; }
 
-    public Long getSeatId() { return seatId; }
-    public void setSeatId(Long seatId) { this.seatId = seatId; }
+    public List<Long> getSeatIds() { return seatIds; }
+    public void setSeatIds(List<Long> seatIds) { this.seatIds = seatIds; }
 
     public String getPassengerName() { return passengerName; }
     public void setPassengerName(String passengerName) { this.passengerName = passengerName; }

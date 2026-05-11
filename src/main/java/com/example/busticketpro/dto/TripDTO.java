@@ -3,7 +3,7 @@ import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.time.LocalDateTime;
-
+//dữ liệu để tạo mới một chuyến xe
 public class TripDTO {
 
     @NotNull(message = "Vui lòng chọn xe")
