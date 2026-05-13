@@ -63,7 +63,8 @@
 </nav>
 
 <main class="container page-shell">
-
+    <div th:if="${successMsg}" class="alert alert-success alert-auto-dismiss" th:text="${successMsg}"></div>
+    <div th:if="${errorMsg}" class="alert alert-danger alert-auto-dismiss" th:text="${errorMsg}"></div>
     <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
 
         <div>

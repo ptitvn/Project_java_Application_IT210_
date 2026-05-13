@@ -15,6 +15,7 @@ import org.springframework.validation.BindingResult;
 import java.util.List;
 import com.example.busticketpro.repository.LocationRepository;
 import com.example.busticketpro.repository.RouteRepository;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/admin/buses")
 public class BusController {
@@ -94,12 +95,16 @@ public class BusController {
     }
 
 //  Xóa một xe khách khỏi hệ thống dựa trên mã ID đã chọn.
-    @GetMapping("/delete/{id}")
-    public String deleteBus(@PathVariable Long id) {
+@GetMapping("/delete/{id}")
+public String deleteBus(@PathVariable Long id, RedirectAttributes redirectAttrs) {
+    try {
         busService.deleteBus(id);
-        return "redirect:/admin/buses";
+        redirectAttrs.addFlashAttribute("successMsg", "Xóa xe thành công!");
+    } catch (RuntimeException e) {
+        redirectAttrs.addFlashAttribute("errorMsg", e.getMessage());
     }
-
+    return "redirect:/admin/buses";
+}
     @Autowired
     private LocationRepository locationRepository;
 

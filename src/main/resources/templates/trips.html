@@ -143,6 +143,20 @@
                        onclick="return confirm('Chuyến chưa khởi hành! Nếu có vé đã thanh toán sẽ không thể xóa. Tiếp tục?')">
                         Xóa
                     </a>
+
+<!--                    <a th:if="${departedMap[trip.id]}"-->
+<!--                       th:href="@{/admin/trips/delete/{id}(id=${trip.id})}"-->
+<!--                       class="btn btn-outline-danger btn-sm"-->
+<!--                       onclick="return confirm('Xác nhận xóa toàn bộ dữ liệu chuyến này?')">-->
+<!--                        Xóa-->
+<!--                    </a>-->
+
+<!--                    <button th:if="${!departedMap[trip.id]}"-->
+<!--                            class="btn btn-outline-danger btn-sm"-->
+<!--                            disabled-->
+<!--                            title="Chỉ được xóa sau khi chuyến đã khởi hành">-->
+<!--                        Xóa-->
+<!--                    </button>-->
                 </td>
             </tr>
 

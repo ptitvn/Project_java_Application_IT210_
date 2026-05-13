@@ -77,11 +77,18 @@ public class TripService {
                 );
             }
         }
-
+//        if (!departed) {
+//            throw new RuntimeException(
+//                    "Không thể xóa chuyến chưa khởi hành. " +
+//                            "Chỉ được xóa sau khi chuyến đã khởi hành."
+//            );
+//        }
+//        List<Ticket> tickets = ticketRepository.findByTripId(id);
+//        ticketRepository.deleteAll(tickets);
 
         ticketRepository.deleteAll(tickets);
 
-        
+
         List<Seat> seats = seatRepository.findByTripId(id);
         seatRepository.deleteAll(seats);
 
